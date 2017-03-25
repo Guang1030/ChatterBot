@@ -58,6 +58,44 @@ Example chat bot parameters
    )
 
 
+Example expanded chat bot parameters
+====================================
+
+It is also possible to pass parameters directly to individual adapters.
+To do this, you must use a dictionary that contains a key called :code:`import_path`
+which specifies the import path to the adapter class.
+
+.. code-block:: python
+
+   ChatBot(
+       'Leander Jenkins',
+       storage_adapter={
+           'import_path': 'my.storage.AdapterClass',
+           'database_name': 'my-database'
+       },
+       logic_adapters=[
+           {
+               'import_path': 'my.logic.AdapterClass1',
+               'statement_comparison_function': 'chatterbot.comparisons.levenshtein_distance'
+               'response_selection_method': 'chatterbot.response_selection.get_first_response'
+           },
+           {
+               'import_path': 'my.logic.AdapterClass2',
+               'statement_comparison_function': 'my.custom.comparison_function'
+               'response_selection_method': 'my.custom.selection_method'
+           }
+       ],
+       input_adapter={
+           'import_path': 'my.input.AdapterClass',
+           'api_key': '0000-1111-2222-3333-DDDD'
+       },
+       output_adapter={
+           'import_path': 'my.output.AdapterClass',
+           'api_key': '0000-1111-2222-3333-DDDD'
+       }
+   )
+
+
 Enable logging
 ==============
 
@@ -91,3 +129,53 @@ This can be useful when testing and debugging your code.
        # ...
        logger=custom_logger
    )
+
+Adapters
+========
+
+ChatterBot uses adapter modules to control the behavior of specific types of tasks.
+There are four distinct types of adapters that ChatterBot uses,
+these are storage adapters, input adapters, output adapters and logic adapters.
+
+Adapters types
+--------------
+
+1. Storage adapters - Provide an interface for ChatterBot to connect to various storage systems such as `MongoDB`_ or local file storage.
+2. Input adapters - Provide methods that allow ChatterBot to get input from a defined data source.
+3. Output adapters - Provide methods that allow ChatterBot to return a response to a defined data source.
+4. Logic adapters - Define the logic that ChatterBot uses to respond to input it receives.
+
+Accessing the chatbot instance
+-------------------------------
+
+When ChatterBot initializes each adapter, it sets an attribute named :code:`chatbot`.
+The chatbot variable makes it possible for each adapter to have access to all of the other adapters being used.
+Suppose two input and output adapters need to share some information or perhaps you want to give your logic adapter
+direct access to the storage adapter. These are just a few cases where this functionality is useful.
+
+Each adapter can be accessed on the chatbot object from within an adapter by referencing `self.chatbot`.
+Then, :code:`self.chatbot.storage` refers to the storage adapter, :code:`self.chatbot.input` refers to the input adapter,
+:code:`self.chatbot.output` refers to the current output adapter, and :code:`self.chatbot.logic` refers to the logic adapters.
+
+Adapter defaults
+----------------
+
+By default, ChatterBot uses the `JsonFileStorageAdapter` adapter for storage,
+the `BestMatch` for logic, the `VariableInputTypeAdapter` for input
+and the `OutputAdapter` for output.
+
+Each adapter can be set by passing in the dot-notated import path to the constructor as shown.
+
+.. code-block:: python
+
+   bot = ChatBot(
+       "Elsie",
+       storage_adapter="chatterbot.storage.JsonFileStorageAdapter",
+       input_adapter="chatterbot.input.VariableInputTypeAdapter",
+       output_adapter="chatterbot.output.OutputAdapter",
+       logic_adapters=[
+           "chatterbot.logic.BestMatch"
+       ],
+   )
+
+.. _MongoDB: https://docs.mongodb.com/
